@@ -17,15 +17,17 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     Button btnAdd;
-    EditText etNotes;
+    EditText etNotes;   
     ListView lvNotes;
     ArrayList<String> savedNotes;
+    ArrayAdapter<String> arrayAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,8 +36,9 @@ public class MainActivity extends AppCompatActivity {
         btnAdd=findViewById(R.id.btnAdd);
         etNotes=findViewById(R.id.etNotes);
         lvNotes = findViewById(R.id.lvNotes);
+        savedNotes = new ArrayList<>();
 
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+       arrayAdapter = new ArrayAdapter<>(
                 this,
                 R.layout.item_veiw,
                 R.id.tvNote,
@@ -54,8 +57,10 @@ public class MainActivity extends AppCompatActivity {
 
                 dbRef.child("note").push().setValue(notes);
                 Toast.makeText(MainActivity.this,"Your notes has been saved",Toast.LENGTH_SHORT).show();
+                etNotes.setText(null);
             }
         });
+
 
         dbRef.child("note").addChildEventListener(new ChildEventListener() {
             @Override
