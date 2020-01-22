@@ -24,20 +24,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int RC_SIGN_IN = 1234;
+    private static final int RC_SIGN_IN = 1000;
     Button btnAdd;
     EditText etNotes;   
     ListView lvNotes;
     ArrayList<String> savedNotes;
     ArrayAdapter<String> arrayAdapter;
     FirebaseUser firebaseUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,11 +56,11 @@ public class MainActivity extends AppCompatActivity {
 
         );
         lvNotes.setAdapter(arrayAdapter);
+
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if(firebaseUser!=null){
             //Logged in:
-
             addListeners();
 
         }
@@ -74,10 +74,10 @@ public class MainActivity extends AppCompatActivity {
                                     new AuthUI.IdpConfig.GoogleBuilder().build(),
                                     new AuthUI.IdpConfig.EmailBuilder().build(),
                                     new AuthUI.IdpConfig.PhoneBuilder().build()))
-                            .build(), RC_SIGN_IN);
+                            .build(),
+                    RC_SIGN_IN);
 
         }
-
 
 
     }
@@ -85,11 +85,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
+
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
 
             // Successfully signed in
             if (resultCode == RESULT_OK) {
+
                 firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
                 addListeners();
 
@@ -101,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
                     // User pressed back button
                     return;
                 }
-
                 if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {
 
                     return;
@@ -117,13 +118,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 String notes=etNotes.getText().toString();
+
                 dbRef.child("note").child(firebaseUser.getUid()).push().setValue(notes);
 
                 Toast.makeText(MainActivity.this,"Your notes has been saved",Toast.LENGTH_SHORT).show();
                 etNotes.setText(null);
             }
         });
-        dbRef.child("note").addChildEventListener(new ChildEventListener() {
+
+        dbRef.child("note").child(firebaseUser.getUid()).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String data = dataSnapshot.getValue(String.class);
